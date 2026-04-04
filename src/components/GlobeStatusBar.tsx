@@ -37,8 +37,8 @@ export default function GlobeStatusBar() {
     >
       <div className="scanner-line" style={{ top: "50%", left: 0, opacity: 0.15 }} />
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-        <span className="glow-cyan" style={{ color: "var(--color-accent-cyan)", fontWeight: 700, fontSize: "10px", letterSpacing: "0.2em" }}>MINORITY REPORT</span>
-        <span style={{ color: "rgba(0, 229, 255, 0.15)" }}>│</span>
+        <span className="glow-cyan" style={{ color: "var(--color-accent-cyan)", fontWeight: 700, fontSize: "10px", letterSpacing: "0.2em" }}>OMNISIGHT</span>
+        <span style={{ color: "rgba(0, 112, 243, 0.15)" }}>│</span>
         <StatusItem label="TARGETS" value="3" />
         <StatusItem label="CAMERAS" value="0" />
         <StatusItem label="SIMULATIONS" value="0" />
