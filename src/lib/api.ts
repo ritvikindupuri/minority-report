@@ -12,7 +12,7 @@ import type {
 import * as mockApi from "./mock-api";
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  import.meta.env.VITE_API_URL ?? "http://localhost:8000";
 
 // ── Fallback helper: try real API, fall back to mock on network errors ────────
 
