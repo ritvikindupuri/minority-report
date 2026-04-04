@@ -1,7 +1,7 @@
 
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSessionId, getSelectedBuilding } from "../lib/session";
 import { PRELOADED_BUILDINGS } from "../lib/buildings";
