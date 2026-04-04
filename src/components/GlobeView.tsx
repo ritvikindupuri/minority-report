@@ -68,7 +68,7 @@ export default function GlobeView() {
         (window as unknown as Record<string, unknown>).CESIUM_BASE_URL =
           "https://cesium.com/downloads/cesiumjs/releases/1.140/Build/Cesium/";
 
-        const ionToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
+        const ionToken = import.meta.env.VITE_CESIUM_ION_TOKEN || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlOTg2MjNiOS1mN2E2LTRjNGMtOTQzZC1hZjAxZDM0NGQ1MGMiLCJpZCI6MzYzNTY2LCJpYXQiOjE3NjQwNDM1ODJ9.fBcYO6QztbNm7zHEYQ8KrAp7urIKkT4ac4hBNeq2fvM";
         if (ionToken) {
           Cesium.Ion.defaultAccessToken = ionToken;
         } else {
