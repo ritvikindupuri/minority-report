@@ -244,7 +244,7 @@ export default function BuildingView() {
     (cameraId: string) => {
       navigate(`/camera/${cameraId}`);
     },
-    [router]
+    [navigate]
   );
 
   // ── Error / offline state ─────────────────────────────────────────────────
