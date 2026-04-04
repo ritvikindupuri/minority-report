@@ -10,6 +10,9 @@ import GlobeStatusBar from "@/components/GlobeStatusBar";
 
 const buildingSelectRef: { current: ((b: Building) => void) | null } = { current: null };
 
+// West Lafayette center coordinates
+const WEST_LAFAYETTE = { lat: 40.4259, lng: -86.9081 };
+
 interface CursorCoords {
   lat: string;
   lng: string;
@@ -27,6 +30,7 @@ export default function GlobeView() {
   const [selectingBuilding, setSelectingBuilding] = useState<string | null>(null);
   const [coords, setCoords] = useState<CursorCoords>({ lat: "40.4274", lng: "-86.9167", alt: "800" });
   const [cesiumReady, setCesiumReady] = useState(false);
+  const [zoomedIn, setZoomedIn] = useState(false);
 
   const handleBuildingSelect = useCallback(
     async (building: Building) => {
@@ -64,7 +68,6 @@ export default function GlobeView() {
       try {
         const Cesium = await import("cesium");
 
-        // Set Cesium base URL to use CDN
         (window as unknown as Record<string, unknown>).CESIUM_BASE_URL =
           "https://cesium.com/downloads/cesiumjs/releases/1.140/Build/Cesium/";
 
@@ -128,6 +131,7 @@ export default function GlobeView() {
         if (v.scene.sun) v.scene.sun.show = false;
         if (v.scene.moon) v.scene.moon.show = false;
 
+        // Load 3D buildings tileset (will be visible when zoomed in)
         if (ionToken) {
           try {
             const tileset = await Cesium.Cesium3DTileset.fromIonAssetId(96188);
@@ -137,17 +141,64 @@ export default function GlobeView() {
           }
         }
 
+        // Start zoomed OUT — showing the whole globe
         v.camera.setView({
-          destination: Cesium.Cartesian3.fromDegrees(-86.9130, 40.4265, 20_000_000),
+          destination: Cesium.Cartesian3.fromDegrees(-86.9081, 40.4259, 20_000_000),
           orientation: { heading: Cesium.Math.toRadians(0), pitch: Cesium.Math.toRadians(-90), roll: 0 },
         });
 
+        // Add a prominent WEST LAFAYETTE city marker (visible from space)
+        const cityPosition = Cesium.Cartesian3.fromDegrees(WEST_LAFAYETTE.lng, WEST_LAFAYETTE.lat, 0);
+        v.entities.add({
+          id: "west-lafayette-marker",
+          name: "West Lafayette",
+          position: cityPosition,
+          point: {
+            pixelSize: 18,
+            color: Cesium.Color.fromCssColorString("#f97316"),
+            outlineColor: Cesium.Color.fromCssColorString("#f97316").withAlpha(0.4),
+            outlineWidth: 12,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          },
+          label: {
+            text: "WEST LAFAYETTE",
+            font: "bold 14px 'Roboto Mono', monospace",
+            fillColor: Cesium.Color.fromCssColorString("#f97316"),
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 4,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            pixelOffset: new Cesium.Cartesian2(0, -30),
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          },
+        });
+
+        // Pulsing ring around the city marker
+        v.entities.add({
+          id: "west-lafayette-ring",
+          position: cityPosition,
+          ellipse: {
+            semiMajorAxis: 5000,
+            semiMinorAxis: 5000,
+            material: Cesium.Color.fromCssColorString("#f97316").withAlpha(0.08),
+            outline: true,
+            outlineColor: Cesium.Color.fromCssColorString("#f97316").withAlpha(0.4),
+            outlineWidth: 2,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          },
+        });
+
+        // Building markers (hidden initially, shown after zoom)
+        const buildingEntities: any[] = [];
         for (const building of PRELOADED_BUILDINGS) {
           const position = Cesium.Cartesian3.fromDegrees(building.lng, building.lat, 0);
-          v.entities.add({
+          const entity = v.entities.add({
             id: building.id,
             name: building.name,
             position,
+            show: false, // Hidden until user zooms into West Lafayette
             point: {
               pixelSize: 14,
               color: Cesium.Color.fromCssColorString("#00e5ff"),
@@ -169,8 +220,12 @@ export default function GlobeView() {
               heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             },
           });
+          buildingEntities.push(entity);
+
           v.entities.add({
+            id: `${building.id}-ring`,
             position,
+            show: false,
             ellipse: {
               semiMajorAxis: 40,
               semiMinorAxis: 40,
@@ -183,13 +238,52 @@ export default function GlobeView() {
           });
         }
 
+        // Function to show building markers and hide city marker
+        function zoomToCampus() {
+          // Hide city-level marker
+          const cityEntity = v.entities.getById("west-lafayette-marker");
+          const cityRing = v.entities.getById("west-lafayette-ring");
+          if (cityEntity) cityEntity.show = false;
+          if (cityRing) cityRing.show = false;
+
+          // Show building markers
+          for (const building of PRELOADED_BUILDINGS) {
+            const entity = v.entities.getById(building.id);
+            const ring = v.entities.getById(`${building.id}-ring`);
+            if (entity) entity.show = true;
+            if (ring) ring.show = true;
+          }
+
+          // Fly to campus with 3D tilt
+          v.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(-86.9130, 40.4265, 1200),
+            orientation: {
+              heading: Cesium.Math.toRadians(0),
+              pitch: Cesium.Math.toRadians(-45),
+              roll: 0,
+            },
+            duration: 3,
+          });
+
+          setZoomedIn(true);
+        }
+
+        // Click handler
         const handler = new Cesium.ScreenSpaceEventHandler(v.scene.canvas);
         handler.setInputAction(
           (click: any) => {
             const picked = v.scene.pick(click.position);
-            if (Cesium.defined(picked) && picked.id && picked.id.id) {
-              const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
-              if (building && buildingSelectRef.current) buildingSelectRef.current(building);
+            if (Cesium.defined(picked) && picked.id) {
+              // If user clicks the West Lafayette marker, zoom in
+              if (picked.id.id === "west-lafayette-marker") {
+                zoomToCampus();
+                return;
+              }
+              // If user clicks a building marker
+              if (picked.id.id) {
+                const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
+                if (building && buildingSelectRef.current) buildingSelectRef.current(building);
+              }
             }
           },
           Cesium.ScreenSpaceEventType.LEFT_CLICK
@@ -199,6 +293,11 @@ export default function GlobeView() {
           (movement: any) => {
             const picked = v.scene.pick(movement.endPosition);
             if (Cesium.defined(picked) && picked.id && picked.id.id) {
+              if (picked.id.id === "west-lafayette-marker") {
+                containerRef.current!.style.cursor = "pointer";
+                setHoveredBuilding("west-lafayette");
+                return;
+              }
               const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
               if (building) {
                 setHoveredBuilding(building.id);
@@ -224,14 +323,7 @@ export default function GlobeView() {
           });
         });
 
-        // Fly to Purdue campus
-        setTimeout(() => {
-          v.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(-86.9130, 40.4265, 1200),
-            orientation: { heading: Cesium.Math.toRadians(0), pitch: Cesium.Math.toRadians(-45), roll: 0 },
-            duration: 4,
-          });
-        }, 500);
+        // NO auto-zoom — user stays on globe view until they click the marker
 
         setCesiumReady(true);
         setReady(true);
@@ -254,12 +346,14 @@ export default function GlobeView() {
     ? PRELOADED_BUILDINGS.find((b) => b.id === hoveredBuilding)
     : null;
 
+  const isHoveringCity = hoveredBuilding === "west-lafayette";
+
   return (
     <div className="absolute inset-0 w-full h-full" style={{ backgroundColor: "var(--color-bg)" }}>
       <div ref={containerRef} className="absolute inset-0" style={{ backgroundColor: "#0a0a0a" }} />
 
       <AnimatePresence>
-        {ready && (
+        {ready && zoomedIn && (
           <motion.div key="chrome" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }} className="absolute inset-0" style={{ zIndex: 25, pointerEvents: "none" }}>
             <div style={{ pointerEvents: "auto" }}>
               <GlobeSidebar onBuildingSelect={handleBuildingSelect} />
@@ -287,38 +381,55 @@ export default function GlobeView() {
               <span key={i} aria-hidden className="absolute" style={{ width: "28px", height: "28px", borderStyle: "solid", borderColor: "var(--color-accent-cyan)", opacity: 0.35, ...pos } as React.CSSProperties} />
             ))}
 
-            <div className="absolute flex flex-col gap-1 text-xs" style={{ fontFamily: "var(--font-mono)", top: "48px", left: "264px" }}>
-              <span className="hud-pulse" style={{ color: "var(--color-accent-green)" }}>● SATELLITE LINK ACTIVE</span>
-              <span style={{ color: "var(--color-text-dim)" }}>FEED: PURDUE UNIVERSITY</span>
-              <span style={{ color: "var(--color-text-dim)" }}>RESOLUTION: 0.3m/px</span>
-            </div>
+            {!zoomedIn && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 text-center"
+                style={{ fontFamily: "var(--font-mono)", transform: "translate(-50%, 200px)" }}
+              >
+                <span className="text-xs tracking-[0.3em] uppercase" style={{ color: "#f97316" }}>
+                  ▶ CLICK WEST LAFAYETTE MARKER TO BEGIN
+                </span>
+              </motion.div>
+            )}
 
-            <div className="absolute top-12 right-10 flex flex-col items-end gap-1 text-xs" style={{ fontFamily: "var(--font-mono)" }}>
-              <MissionClock />
-              <span style={{ color: "var(--color-text-dim)" }}>CLASSIFICATION: EYES ONLY</span>
-            </div>
+            {zoomedIn && (
+              <>
+                <div className="absolute flex flex-col gap-1 text-xs" style={{ fontFamily: "var(--font-mono)", top: "48px", left: "264px" }}>
+                  <span className="hud-pulse" style={{ color: "var(--color-accent-green)" }}>● SATELLITE LINK ACTIVE</span>
+                  <span style={{ color: "var(--color-text-dim)" }}>FEED: PURDUE UNIVERSITY</span>
+                  <span style={{ color: "var(--color-text-dim)" }}>RESOLUTION: 0.3m/px</span>
+                </div>
 
-            <div className="absolute" style={{ top: "50%", left: "calc(50% + 120px)", transform: "translate(-50%, -50%)", pointerEvents: "none" }}>
-              <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={{ opacity: 0.2 }}>
-                <line x1="30" y1="0" x2="30" y2="22" stroke="#00e5ff" strokeWidth="0.5" />
-                <line x1="30" y1="38" x2="30" y2="60" stroke="#00e5ff" strokeWidth="0.5" />
-                <line x1="0" y1="30" x2="22" y2="30" stroke="#00e5ff" strokeWidth="0.5" />
-                <line x1="38" y1="30" x2="60" y2="30" stroke="#00e5ff" strokeWidth="0.5" />
-                <circle cx="30" cy="30" r="25" stroke="#00e5ff" strokeWidth="0.5" fill="none" />
-                <circle cx="30" cy="30" r="4" stroke="#00e5ff" strokeWidth="0.5" fill="none" />
-                <line x1="30" y1="5" x2="30" y2="9" stroke="#00e5ff" strokeWidth="1" />
-                <line x1="30" y1="51" x2="30" y2="55" stroke="#00e5ff" strokeWidth="1" />
-                <line x1="5" y1="30" x2="9" y2="30" stroke="#00e5ff" strokeWidth="1" />
-                <line x1="51" y1="30" x2="55" y2="30" stroke="#00e5ff" strokeWidth="1" />
-              </svg>
-              <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style={{ position: "absolute", top: "-10px", left: "-10px", opacity: 0.1, animation: "reticle-spin 30s linear infinite" }}>
-                <circle cx="40" cy="40" r="36" stroke="#00e5ff" strokeWidth="0.5" strokeDasharray="6 10" fill="none" />
-              </svg>
-            </div>
+                <div className="absolute top-12 right-10 flex flex-col items-end gap-1 text-xs" style={{ fontFamily: "var(--font-mono)" }}>
+                  <MissionClock />
+                  <span style={{ color: "var(--color-text-dim)" }}>CLASSIFICATION: EYES ONLY</span>
+                </div>
 
-            <div className="absolute left-1/2 text-xs" style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-cyan)", opacity: 0.6, bottom: "58px", transform: "translateX(calc(-50% + 120px))" }}>
-              SELECT TARGET BUILDING TO PROCEED
-            </div>
+                <div className="absolute" style={{ top: "50%", left: "calc(50% + 120px)", transform: "translate(-50%, -50%)", pointerEvents: "none" }}>
+                  <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={{ opacity: 0.2 }}>
+                    <line x1="30" y1="0" x2="30" y2="22" stroke="#00e5ff" strokeWidth="0.5" />
+                    <line x1="30" y1="38" x2="30" y2="60" stroke="#00e5ff" strokeWidth="0.5" />
+                    <line x1="0" y1="30" x2="22" y2="30" stroke="#00e5ff" strokeWidth="0.5" />
+                    <line x1="38" y1="30" x2="60" y2="30" stroke="#00e5ff" strokeWidth="0.5" />
+                    <circle cx="30" cy="30" r="25" stroke="#00e5ff" strokeWidth="0.5" fill="none" />
+                    <circle cx="30" cy="30" r="4" stroke="#00e5ff" strokeWidth="0.5" fill="none" />
+                    <line x1="30" y1="5" x2="30" y2="9" stroke="#00e5ff" strokeWidth="1" />
+                    <line x1="30" y1="51" x2="30" y2="55" stroke="#00e5ff" strokeWidth="1" />
+                    <line x1="5" y1="30" x2="9" y2="30" stroke="#00e5ff" strokeWidth="1" />
+                    <line x1="51" y1="30" x2="55" y2="30" stroke="#00e5ff" strokeWidth="1" />
+                  </svg>
+                  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style={{ position: "absolute", top: "-10px", left: "-10px", opacity: 0.1, animation: "reticle-spin 30s linear infinite" }}>
+                    <circle cx="40" cy="40" r="36" stroke="#00e5ff" strokeWidth="0.5" strokeDasharray="6 10" fill="none" />
+                  </svg>
+                </div>
+
+                <div className="absolute left-1/2 text-xs" style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-cyan)", opacity: 0.6, bottom: "58px", transform: "translateX(calc(-50% + 120px))" }}>
+                  SELECT TARGET BUILDING TO PROCEED
+                </div>
+              </>
+            )}
 
             <div className="absolute bottom-4 left-1/2 flex items-center gap-6 text-xs tracking-widest" style={{ fontFamily: "var(--font-mono)", color: "var(--color-text-dim)", transform: "translateX(calc(-50% + 120px))" }}>
               <span>LAT {coords.lat}° N</span>
@@ -335,6 +446,20 @@ export default function GlobeView() {
         )}
       </AnimatePresence>
 
+      {/* Hover tooltip for city marker */}
+      <AnimatePresence>
+        {isHoveringCity && (
+          <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.15 }}
+            className="pointer-events-none absolute glow-cyan-box px-4 py-3 text-xs"
+            style={{ fontFamily: "var(--font-mono)", color: "#f97316", backgroundColor: "rgba(10, 10, 10, 0.92)", border: "1px solid rgba(249, 115, 22, 0.3)", borderRadius: "3px", top: "100px", left: "50%", transform: "translateX(-50%)", zIndex: 30 }}
+          >
+            <span style={{ letterSpacing: "0.1em", color: "#f97316" }}>TARGET: WEST LAFAYETTE, IN</span>
+            <span className="block mt-1" style={{ color: "var(--color-text-dim)" }}>PURDUE UNIVERSITY CAMPUS | CLICK TO ZOOM IN</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hover tooltip for building markers */}
       <AnimatePresence>
         {hoveredBuildingData && (
           <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }} transition={{ duration: 0.15 }}
@@ -383,11 +508,13 @@ function MissionClock() {
   }, []);
 
   return (
-    <span className="glow-green" style={{ color: "var(--color-accent-green)" }}>{time} UTC</span>
+    <span style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-cyan)", fontWeight: 700, fontSize: "12px", letterSpacing: "0.15em", fontVariantNumeric: "tabular-nums" }}>
+      {time}
+    </span>
   );
 }
 
-function formatTime(): string {
-  const now = new Date();
-  return now.toISOString().replace("T", " ").slice(0, 19);
+function formatTime() {
+  const d = new Date();
+  return d.toISOString().slice(11, 19) + " UTC";
 }
