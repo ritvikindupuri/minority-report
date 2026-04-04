@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Building from "./pages/Building";
 import Camera from "./pages/Camera";
 import NotFound from "./pages/NotFound";
+import SplatView from "./pages/SplatView";
 
 const queryClient = new QueryClient();
 
@@ -21,6 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/splat" element={<SplatView />} />
             <Route path="/building" element={<Building />} />
             <Route path="/camera/:id" element={<Camera />} />
             <Route path="*" element={<NotFound />} />

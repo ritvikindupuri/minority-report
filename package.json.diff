@@ -1,0 +1,10 @@
+--- package.json
++++ package.json
+@@ -32,6 +32,7 @@
+     "@radix-ui/react-tooltip": "^1.2.7",
+     "@tanstack/react-query": "^5.83.0",
+     "@types/three": "^0.183.1",
++    "@mkkellogg/gaussian-splats-3d": "^0.4.7",
+     "cesium": "^1.140.0",
+     "class-variance-authority": "^0.7.1",
+     "clsx": "^2.1.1",

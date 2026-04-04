@@ -224,14 +224,43 @@ export default function GlobeView() {
           });
         });
 
-        // Fly to Purdue campus
-        setTimeout(() => {
-          v.camera.flyTo({
-            destination: Cesium.Cartesian3.fromDegrees(-86.9130, 40.4265, 1200),
-            orientation: { heading: Cesium.Math.toRadians(0), pitch: Cesium.Math.toRadians(-45), roll: 0 },
-            duration: 4,
-          });
-        }, 500);
+        // Initial view zoomed out
+        v.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(-86.9130, 40.4265, 20000000),
+        });
+
+        // Add West Lafayette Marker
+        v.entities.add({
+          id: "west-lafayette-marker",
+          position: Cesium.Cartesian3.fromDegrees(-86.9130, 40.4265),
+          point: {
+            pixelSize: 15,
+            color: Cesium.Color.fromCssColorString("#ff6b00"),
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2,
+          },
+          label: {
+            text: "WEST LAFAYETTE",
+            font: "14pt monospace",
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            fillColor: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            pixelOffset: new Cesium.Cartesian2(0, -20),
+          },
+        });
+
+        // Click handler for marker
+        v.screenSpaceEventHandler.setInputAction(
+          (movement: any) => {
+            const pickedObject = v.scene.pick(movement.position);
+            if (Cesium.defined(pickedObject) && pickedObject.id && pickedObject.id.id === "west-lafayette-marker") {
+              navigate("/splat");
+            }
+          },
+          Cesium.ScreenSpaceEventType.LEFT_CLICK
+        );
 
         setCesiumReady(true);
         setReady(true);
