@@ -219,7 +219,7 @@ export default function BuildingView() {
           setLoadError("SYSTEM OFFLINE — UNABLE TO RETRIEVE BUILDING DATA");
         }
       });
-  }, [router]);
+  }, [navigate]);
 
   // ── Deploy cameras ────────────────────────────────────────────────────────
   const handleDeploy = useCallback(async () => {
