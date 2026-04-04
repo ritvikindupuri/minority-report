@@ -356,7 +356,7 @@ export default function BuildingView() {
           justifyContent: "center",
           padding: "3px 0",
           marginBottom: "-16px",
-          borderBottom: "1px solid rgba(0, 229, 255, 0.06)",
+          borderBottom: "1px solid rgba(0, 112, 243, 0.06)",
         }}
       >
         <span
@@ -368,7 +368,7 @@ export default function BuildingView() {
             opacity: 0.35,
           }}
         >
-          TOP SECRET // BUILDING ANALYSIS // MINORITY REPORT SURVEILLANCE SYSTEM
+          CONFIDENTIAL // BUILDING ANALYSIS // OMNISIGHT PLATFORM
         </span>
       </div>
 
@@ -826,10 +826,10 @@ export default function BuildingView() {
           color: "var(--color-text-dim)",
           letterSpacing: "0.2em",
           paddingTop: "8px",
-          borderTop: "1px solid rgba(0,229,255,0.07)",
+          borderTop: "1px solid rgba(0,112,243,0.07)",
         }}
       >
-        <span>MINORITY REPORT // BUILDING VIEW</span>
+        <span>OMNISIGHT // BUILDING VIEW</span>
         <span className="hud-pulse">SURVEILLANCE ACTIVE</span>
         <span>
           {new Date().toISOString().slice(0, 19).replace("T", " ")} UTC

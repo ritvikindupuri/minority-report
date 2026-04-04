@@ -89,7 +89,7 @@ export default function LandingPage() {
           <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center">
             <Shield size={18} className="text-black" />
           </div>
-          <span>CATAPULT</span>
+          <span>OMNISIGHT</span>
         </div>
         <div className="flex items-center gap-8 text-sm font-medium text-white/60">
           <a href="#" className="hover:text-white transition-colors">Documentation</a>
@@ -104,7 +104,7 @@ export default function LandingPage() {
       </nav>
 
       <section className="relative pt-40 pb-20 px-4 md:px-8 max-w-7xl mx-auto flex flex-col items-center text-center">
-        <ShinyBadge>Introducing Catapult v2.0 AI Persistence</ShinyBadge>
+        <ShinyBadge>Introducing OmniSight v2.0 AI Persistence</ShinyBadge>
         
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -124,7 +124,7 @@ export default function LandingPage() {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="mt-8 text-lg md:text-xl text-white/50 max-w-2xl leading-relaxed"
         >
-          The next generation of autonomous surveillance. Catapult leverages advanced neural networks to provide real-time, predictive intelligence for complex environments.
+          The next generation of autonomous surveillance. OmniSight leverages advanced neural networks to provide real-time, predictive intelligence for complex environments.
         </motion.p>
 
         <motion.div
@@ -209,10 +209,10 @@ export default function LandingPage() {
       <footer className="py-20 border-t border-white/5 px-8 flex flex-col items-center gap-6">
         <div className="flex items-center gap-2 font-bold opacity-50">
           <Shield size={16} />
-          <span>CATAPULT</span>
+          <span>OMNISIGHT</span>
         </div>
         <p className="text-white/30 text-xs tracking-widest uppercase">
-          © 2026 Catapult Intelligence Platforms. All rights reserved.
+          © 2026 OmniSight Intelligence Platforms. All rights reserved.
         </p>
       </footer>
     </main>

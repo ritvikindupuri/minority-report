@@ -274,7 +274,7 @@ export default function GlobeView() {
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2, delay: 0.5 }} className="pointer-events-none absolute inset-0">
             <div className="absolute top-0 left-0 right-0 flex items-center justify-center py-2" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%)" }}>
               <span className="glow-cyan text-xs tracking-[0.5em] uppercase" style={{ fontFamily: "var(--font-mono)", color: "var(--color-accent-cyan)" }}>
-                TOP SECRET // SCI // MINORITY REPORT SYSTEM
+                CONFIDENTIAL // OMNISIGHT PLATFORM
               </span>
             </div>
 

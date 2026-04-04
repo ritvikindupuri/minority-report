@@ -34,9 +34,9 @@ export default function VideoOverlay({ videoUrl, onClose }: VideoOverlayProps) {
         transition={{ duration: 0.3 }}
         style={{ position: "fixed", inset: 0, zIndex: 100, background: "rgba(0, 0, 0, 0.92)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: 32 }}
       >
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", justifyContent: "center", padding: "4px 0", background: "rgba(0, 229, 255, 0.04)", borderBottom: "1px solid rgba(0, 229, 255, 0.1)" }}>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, display: "flex", justifyContent: "center", padding: "4px 0", background: "rgba(0, 112, 243, 0.04)", borderBottom: "1px solid rgba(0, 112, 243, 0.1)" }}>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 8, letterSpacing: "0.4em", color: "var(--color-accent-cyan)", opacity: 0.45 }}>
-            TOP SECRET // SIMULATION OUTPUT // DO NOT DISTRIBUTE
+            CONFIDENTIAL // SIMULATION OUTPUT // INTERNAL USE ONLY
           </span>
         </div>
 
