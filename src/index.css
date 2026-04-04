@@ -404,3 +404,12 @@ body {
 .cesium-viewer .cesium-viewer-bottom { display: none !important; }
 .cesium-viewer .cesium-widget-credits { display: none !important; }
 .cesium-viewer { background: #0a0a0a !important; }
+.cesium-viewer,
+.cesium-viewer .cesium-widget,
+.cesium-viewer .cesium-widget canvas {
+  width: 100% !important;
+  height: 100% !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+}
