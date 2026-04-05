@@ -149,29 +149,42 @@ export default function GlobeView() {
 
         // Add a prominent WEST LAFAYETTE city marker (visible from space)
         const cityPosition = Cesium.Cartesian3.fromDegrees(WEST_LAFAYETTE.lng, WEST_LAFAYETTE.lat, 0);
+        // Create a canvas for a large clickable billboard
+        const markerCanvas = document.createElement("canvas");
+        markerCanvas.width = 200;
+        markerCanvas.height = 80;
+        const ctx = markerCanvas.getContext("2d")!;
+        // Outer glow circle
+        ctx.beginPath();
+        ctx.arc(100, 30, 18, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(249, 115, 22, 0.3)";
+        ctx.fill();
+        // Inner circle
+        ctx.beginPath();
+        ctx.arc(100, 30, 10, 0, Math.PI * 2);
+        ctx.fillStyle = "#f97316";
+        ctx.fill();
+        // Label text
+        ctx.font = "bold 16px 'Roboto Mono', monospace";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#f97316";
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 4;
+        ctx.strokeText("WEST LAFAYETTE", 100, 70);
+        ctx.fillText("WEST LAFAYETTE", 100, 70);
+
         v.entities.add({
           id: "west-lafayette-marker",
           name: "West Lafayette",
           position: cityPosition,
-          point: {
-            pixelSize: 18,
-            color: Cesium.Color.fromCssColorString("#f97316"),
-            outlineColor: Cesium.Color.fromCssColorString("#f97316").withAlpha(0.4),
-            outlineWidth: 12,
+          billboard: {
+            image: markerCanvas,
+            width: 200,
+            height: 80,
+            verticalOrigin: Cesium.VerticalOrigin.CENTER,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-          },
-          label: {
-            text: "WEST LAFAYETTE",
-            font: "bold 14px 'Roboto Mono', monospace",
-            fillColor: Cesium.Color.fromCssColorString("#f97316"),
-            outlineColor: Cesium.Color.BLACK,
-            outlineWidth: 4,
-            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            pixelOffset: new Cesium.Cartesian2(0, -30),
-            disableDepthTestDistance: Number.POSITIVE_INFINITY,
-            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            scaleByDistance: new Cesium.NearFarScalar(1e4, 2.0, 2e7, 0.8),
           },
         });
 
