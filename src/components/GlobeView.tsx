@@ -206,19 +206,18 @@ export default function GlobeView() {
         // Building markers (hidden initially, shown after zoom)
         const buildingEntities: any[] = [];
         for (const building of PRELOADED_BUILDINGS) {
-          const position = Cesium.Cartesian3.fromDegrees(building.lng, building.lat, 0);
+          const position = Cesium.Cartesian3.fromDegrees(building.lng, building.lat, 80);
           const entity = v.entities.add({
             id: building.id,
             name: building.name,
             position,
-            show: false, // Hidden until user zooms into West Lafayette
+            show: false,
             point: {
-              pixelSize: 14,
+              pixelSize: 18,
               color: Cesium.Color.fromCssColorString("#00e5ff"),
-              outlineColor: Cesium.Color.fromCssColorString("#00e5ff").withAlpha(0.3),
-              outlineWidth: 8,
+              outlineColor: Cesium.Color.fromCssColorString("#00e5ff").withAlpha(0.4),
+              outlineWidth: 10,
               disableDepthTestDistance: Number.POSITIVE_INFINITY,
-              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             },
             label: {
               text: building.name.toUpperCase(),
@@ -285,17 +284,19 @@ export default function GlobeView() {
         const handler = new Cesium.ScreenSpaceEventHandler(v.scene.canvas);
         handler.setInputAction(
           (click: any) => {
-            const picked = v.scene.pick(click.position);
-            if (Cesium.defined(picked) && picked.id) {
-              // If user clicks the West Lafayette marker, zoom in
-              if (picked.id.id === "west-lafayette-marker") {
-                zoomToCampus();
-                return;
-              }
-              // If user clicks a building marker
-              if (picked.id.id) {
+            // Use drillPick to find entities hidden behind the 3D tileset
+            const pickedObjects = v.scene.drillPick(click.position);
+            for (const picked of pickedObjects) {
+              if (Cesium.defined(picked) && picked.id && picked.id.id) {
+                if (picked.id.id === "west-lafayette-marker") {
+                  zoomToCampus();
+                  return;
+                }
                 const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
-                if (building && buildingSelectRef.current) buildingSelectRef.current(building);
+                if (building && buildingSelectRef.current) {
+                  buildingSelectRef.current(building);
+                  return;
+                }
               }
             }
           },
@@ -304,22 +305,26 @@ export default function GlobeView() {
 
         handler.setInputAction(
           (movement: any) => {
-            const picked = v.scene.pick(movement.endPosition);
-            if (Cesium.defined(picked) && picked.id && picked.id.id) {
-              if (picked.id.id === "west-lafayette-marker") {
-                containerRef.current!.style.cursor = "pointer";
-                setHoveredBuilding("west-lafayette");
-                return;
+            const pickedObjects = v.scene.drillPick(movement.endPosition);
+            let found = false;
+            for (const picked of pickedObjects) {
+              if (Cesium.defined(picked) && picked.id && picked.id.id) {
+                if (picked.id.id === "west-lafayette-marker") {
+                  containerRef.current!.style.cursor = "pointer";
+                  setHoveredBuilding("west-lafayette");
+                  found = true;
+                  break;
+                }
+                const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
+                if (building) {
+                  setHoveredBuilding(building.id);
+                  containerRef.current!.style.cursor = "pointer";
+                  found = true;
+                  break;
+                }
               }
-              const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
-              if (building) {
-                setHoveredBuilding(building.id);
-                containerRef.current!.style.cursor = "pointer";
-              } else {
-                setHoveredBuilding(null);
-                containerRef.current!.style.cursor = "default";
-              }
-            } else {
+            }
+            if (!found) {
               setHoveredBuilding(null);
               containerRef.current!.style.cursor = "default";
             }
