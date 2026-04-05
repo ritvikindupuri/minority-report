@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { PRELOADED_BUILDINGS } from "@/lib/buildings";
 import type { Building } from "@/lib/types";
@@ -139,9 +140,19 @@ export default function GlobeView() {
       // Add placeholder
       setComicFrames(prev => [...prev, { id: frameId, imageUrl: "", caption: frameDescriptions[i], status: "generating" }]);
 
-      const imageUrl = createFallbackFrame(frameDescriptions[i], i);
-      await new Promise(r => setTimeout(r, 800 + Math.random() * 400));
-      setComicFrames(prev => prev.map(f => f.id === frameId ? { ...f, imageUrl, status: "done" as const } : f));
+      try {
+        const { data, error } = await supabase.functions.invoke("generate-frame", {
+          body: { prompt: frameDescriptions[i], frameIndex: i, buildingName: activeBuilding?.name },
+        });
+        if (error || !data?.imageUrl) {
+          throw new Error(error?.message || "No image returned");
+        }
+        setComicFrames(prev => prev.map(f => f.id === frameId ? { ...f, imageUrl: data.imageUrl, status: "done" as const } : f));
+      } catch (err) {
+        console.warn("AI generation failed, using fallback:", err);
+        const fallback = createFallbackFrame(frameDescriptions[i], i);
+        setComicFrames(prev => prev.map(f => f.id === frameId ? { ...f, imageUrl: fallback, status: "done" as const } : f));
+      }
     }
 
     setIsSimulating(false);
