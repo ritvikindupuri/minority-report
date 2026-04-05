@@ -206,19 +206,18 @@ export default function GlobeView() {
         // Building markers (hidden initially, shown after zoom)
         const buildingEntities: any[] = [];
         for (const building of PRELOADED_BUILDINGS) {
-          const position = Cesium.Cartesian3.fromDegrees(building.lng, building.lat, 0);
+          const position = Cesium.Cartesian3.fromDegrees(building.lng, building.lat, 80);
           const entity = v.entities.add({
             id: building.id,
             name: building.name,
             position,
-            show: false, // Hidden until user zooms into West Lafayette
+            show: false,
             point: {
-              pixelSize: 14,
+              pixelSize: 18,
               color: Cesium.Color.fromCssColorString("#00e5ff"),
-              outlineColor: Cesium.Color.fromCssColorString("#00e5ff").withAlpha(0.3),
-              outlineWidth: 8,
+              outlineColor: Cesium.Color.fromCssColorString("#00e5ff").withAlpha(0.4),
+              outlineWidth: 10,
               disableDepthTestDistance: Number.POSITIVE_INFINITY,
-              heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             },
             label: {
               text: building.name.toUpperCase(),
