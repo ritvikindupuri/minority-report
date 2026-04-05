@@ -387,7 +387,7 @@ export default function GlobeView() {
                     disableDepthTestDistance: Number.POSITIVE_INFINITY,
                   },
                   label: {
-                    text: `CAM-${String(placedCameras.length + 1).padStart(2, "0")}`,
+                    text: `CAM-${String(camCountRef.current + 1).padStart(2, "0")}`,
                     font: "bold 11px monospace",
                     fillColor: Cesium.Color.fromCssColorString("#00e5ff"),
                     outlineColor: Cesium.Color.BLACK,
