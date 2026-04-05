@@ -135,14 +135,9 @@ export default function GlobeView() {
       // Add placeholder
       setComicFrames(prev => [...prev, { id: frameId, imageUrl: "", caption: frameDescriptions[i], status: "generating" }]);
 
-        // Generate frame image (uses canvas fallback for now, can be replaced with AI)
-        const imageUrl = createFallbackFrame(frameDescriptions[i], i);
-        await new Promise(r => setTimeout(r, 800 + Math.random() * 400)); // Simulate generation time
-        setComicFrames(prev => prev.map(f => f.id === frameId ? { ...f, imageUrl, status: "done" as const } : f));
-        console.error("Frame generation failed:", err);
-        // Use a fallback placeholder
-        setComicFrames(prev => prev.map(f => f.id === frameId ? { ...f, imageUrl: createFallbackFrame(frameDescriptions[i], i), status: "done" as const } : f));
-      }
+      const imageUrl = createFallbackFrame(frameDescriptions[i], i);
+      await new Promise(r => setTimeout(r, 800 + Math.random() * 400));
+      setComicFrames(prev => prev.map(f => f.id === frameId ? { ...f, imageUrl, status: "done" as const } : f));
     }
 
     setIsSimulating(false);
