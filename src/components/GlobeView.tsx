@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { motion, AnimatePresence } from "framer-motion";
 import { PRELOADED_BUILDINGS } from "@/lib/buildings";
 import type { Building } from "@/lib/types";
