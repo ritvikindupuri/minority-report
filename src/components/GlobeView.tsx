@@ -415,7 +415,7 @@ export default function GlobeView() {
               }
               // Check placed cameras
               if (typeof picked.id.id === "string" && picked.id.id.startsWith("placed-cam-")) {
-                const cam = placedCameras.find(c => c.id === picked.id.id);
+                const cam = placedCamerasRef.current.find(c => c.id === picked.id.id);
                 if (cam) {
                   setSelectedCamera(cam);
                   return;
