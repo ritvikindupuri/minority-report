@@ -285,17 +285,19 @@ export default function GlobeView() {
         const handler = new Cesium.ScreenSpaceEventHandler(v.scene.canvas);
         handler.setInputAction(
           (click: any) => {
-            const picked = v.scene.pick(click.position);
-            if (Cesium.defined(picked) && picked.id) {
-              // If user clicks the West Lafayette marker, zoom in
-              if (picked.id.id === "west-lafayette-marker") {
-                zoomToCampus();
-                return;
-              }
-              // If user clicks a building marker
-              if (picked.id.id) {
+            // Use drillPick to find entities hidden behind the 3D tileset
+            const pickedObjects = v.scene.drillPick(click.position);
+            for (const picked of pickedObjects) {
+              if (Cesium.defined(picked) && picked.id && picked.id.id) {
+                if (picked.id.id === "west-lafayette-marker") {
+                  zoomToCampus();
+                  return;
+                }
                 const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
-                if (building && buildingSelectRef.current) buildingSelectRef.current(building);
+                if (building && buildingSelectRef.current) {
+                  buildingSelectRef.current(building);
+                  return;
+                }
               }
             }
           },
