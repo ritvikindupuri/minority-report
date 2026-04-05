@@ -306,22 +306,26 @@ export default function GlobeView() {
 
         handler.setInputAction(
           (movement: any) => {
-            const picked = v.scene.pick(movement.endPosition);
-            if (Cesium.defined(picked) && picked.id && picked.id.id) {
-              if (picked.id.id === "west-lafayette-marker") {
-                containerRef.current!.style.cursor = "pointer";
-                setHoveredBuilding("west-lafayette");
-                return;
+            const pickedObjects = v.scene.drillPick(movement.endPosition);
+            let found = false;
+            for (const picked of pickedObjects) {
+              if (Cesium.defined(picked) && picked.id && picked.id.id) {
+                if (picked.id.id === "west-lafayette-marker") {
+                  containerRef.current!.style.cursor = "pointer";
+                  setHoveredBuilding("west-lafayette");
+                  found = true;
+                  break;
+                }
+                const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
+                if (building) {
+                  setHoveredBuilding(building.id);
+                  containerRef.current!.style.cursor = "pointer";
+                  found = true;
+                  break;
+                }
               }
-              const building = PRELOADED_BUILDINGS.find((b: Building) => b.id === picked.id.id);
-              if (building) {
-                setHoveredBuilding(building.id);
-                containerRef.current!.style.cursor = "pointer";
-              } else {
-                setHoveredBuilding(null);
-                containerRef.current!.style.cursor = "default";
-              }
-            } else {
+            }
+            if (!found) {
               setHoveredBuilding(null);
               containerRef.current!.style.cursor = "default";
             }
