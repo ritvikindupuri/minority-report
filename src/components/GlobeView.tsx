@@ -56,8 +56,12 @@ export default function GlobeView() {
   // Refs for state in event handlers
   const placingCameraRef = useRef(false);
   const streetLevelRef = useRef(false);
+  const placedCamerasRef = useRef<PlacedCamera[]>([]);
+  const camCountRef = useRef(0);
   placingCameraRef.current = placingCamera;
   streetLevelRef.current = streetLevel;
+  placedCamerasRef.current = placedCameras;
+  camCountRef.current = placedCameras.length;
 
   const handleBuildingSelect = useCallback((building: Building) => {
     const v = viewerRef.current;
