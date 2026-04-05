@@ -82,8 +82,8 @@ function generateMockCameras(building: Building, count: number): Camera[] {
     cameras.push({
       id: `cam_${i + 1}`,
       building_id: building.id,
-      position: { x: lngDiffM, y: 2.5, z: latDiffM },
-      rotation: { yaw, pitch: -15 },
+      position: { x: lngDiffM, y: 3.5, z: latDiffM }, // Ceiling height
+      rotation: { yaw, pitch: -45 }, // Pointed downwards
       fov: 60,
       coverage_radius: 25,
       placement_score: 0.8 + Math.random() * 0.15,
@@ -202,6 +202,11 @@ export async function getSimulation(
     status: "complete",
     prompt: "",
     video_url: null,
+    frames: [
+      "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=400&fit=crop", // placeholder frame 1
+      "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=400&fit=crop&brightness=0.8", // placeholder frame 2
+      "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=400&fit=crop&sepia=1", // placeholder frame 3
+    ],
   };
 }
 
@@ -217,6 +222,11 @@ export function pollSimulation(
       status: "complete",
       prompt: "",
       video_url: null,
+      frames: [
+        "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=400&fit=crop", // placeholder frame 1
+        "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=400&fit=crop&auto=format&fit=crop&w=600&q=80", // placeholder frame 2
+        "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&h=400&fit=crop&auto=format&fit=crop&w=600&q=60", // placeholder frame 3
+      ],
     });
   }, 1500);
 

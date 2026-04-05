@@ -2,111 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Radar, ChevronRight, Shield, Eye, Cpu } from "lucide-react";
-
-function GlobeVisual() {
-  return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      {/* Outer glow ring */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.2, delay: 0.3 }}
-        className="absolute"
-        style={{
-          width: "min(600px, 80vw)",
-          height: "min(600px, 80vw)",
-          borderRadius: "50%",
-          background: "conic-gradient(from 180deg, transparent 0deg, rgba(234, 88, 12, 0.6) 60deg, rgba(251, 146, 60, 0.8) 120deg, rgba(234, 88, 12, 0.4) 200deg, transparent 280deg, transparent 360deg)",
-          filter: "blur(2px)",
-          animation: "globe-ring-spin 12s linear infinite",
-        }}
-      />
-
-      {/* Inner dark circle (globe body) */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.7 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1, delay: 0.2 }}
-        className="absolute"
-        style={{
-          width: "min(520px, 70vw)",
-          height: "min(520px, 70vw)",
-          borderRadius: "50%",
-          background: "radial-gradient(circle at 40% 35%, #1a2332 0%, #0d1520 40%, #060a10 80%)",
-          boxShadow: "inset 0 0 80px rgba(0,0,0,0.8), 0 0 120px rgba(234, 88, 12, 0.15)",
-        }}
-      >
-        {/* Grid lines on globe */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 520 520" style={{ opacity: 0.12 }}>
-          {/* Horizontal lines */}
-          {[130, 195, 260, 325, 390].map((y, i) => (
-            <ellipse key={`h-${i}`} cx="260" cy={y} rx={Math.sqrt(260*260 - (y-260)*(y-260))} ry="8" fill="none" stroke="#f97316" strokeWidth="0.5" />
-          ))}
-          {/* Vertical lines */}
-          {[0, 30, 60, 90, 120, 150].map((angle, i) => (
-            <ellipse key={`v-${i}`} cx="260" cy="260" rx={15} ry="240" fill="none" stroke="#f97316" strokeWidth="0.5"
-              transform={`rotate(${angle}, 260, 260)`} />
-          ))}
-        </svg>
-
-        {/* Data nodes on the globe */}
-        <GlobeNode x="35%" y="30%" label="DEPLOYING ASSETS" sublabel="LONDON" delay={0.8} />
-        <GlobeNode x="60%" y="55%" label="SURVEILLANCE ACTIVE" sublabel="WEST LAFAYETTE" delay={1.0} color="#10b981" />
-        <GlobeNode x="70%" y="72%" label="THREAT ANALYSIS" sublabel="SINGAPORE" delay={1.2} />
-      </motion.div>
-
-      {/* Ambient glow */}
-      <div
-        className="absolute"
-        style={{
-          width: "min(700px, 90vw)",
-          height: "min(700px, 90vw)",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(234, 88, 12, 0.08) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-    </div>
-  );
-}
-
-function GlobeNode({ x, y, label, sublabel, delay, color }: { x: string; y: string; label: string; sublabel: string; delay: number; color?: string }) {
-  const nodeColor = color || "#f97316";
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-      className="absolute"
-      style={{ left: x, top: y }}
-    >
-      <div className="flex items-center gap-2">
-        <div
-          className="w-2 h-2 rounded-full"
-          style={{
-            backgroundColor: nodeColor,
-            boxShadow: `0 0 8px ${nodeColor}, 0 0 16px ${nodeColor}40`,
-            animation: "hud-pulse 2.4s ease-in-out infinite",
-          }}
-        />
-        <div
-          className="px-2 py-1 rounded-sm"
-          style={{
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            border: `1px solid ${nodeColor}40`,
-            backdropFilter: "blur(8px)",
-          }}
-        >
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <div className="w-1 h-1 rounded-full" style={{ backgroundColor: nodeColor }} />
-            <span className="text-[7px] font-mono tracking-widest uppercase" style={{ color: nodeColor }}>{label}</span>
-          </div>
-          <div className="text-[8px] font-mono uppercase" style={{ color: "var(--color-text-dim)" }}>{sublabel}</div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
+import GlobeView from "@/components/GlobeView";
 
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -221,11 +117,10 @@ export default function LandingPage() {
           </motion.div>
         </div>
 
-        {/* Right Panel - Globe */}
-        <div className="absolute right-0 top-0 bottom-0 w-3/5 overflow-hidden z-10 hidden md:flex items-center justify-center"
-          style={{ transform: "translateX(5%)" }}
-        >
-          <GlobeVisual />
+        {/* Full background Globe */}
+        <div className="absolute inset-0 overflow-hidden z-10">
+          <GlobeView />
+          <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(90deg, #050B14 0%, rgba(5,11,20,0.8) 40%, rgba(5,11,20,0) 100%)" }} />
         </div>
       </div>
     </main>

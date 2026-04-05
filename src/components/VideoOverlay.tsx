@@ -2,11 +2,12 @@ import { useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface VideoOverlayProps {
-  videoUrl: string;
+  videoUrl?: string | null;
+  frames?: string[];
   onClose: () => void;
 }
 
-export default function VideoOverlay({ videoUrl, onClose }: VideoOverlayProps) {
+export default function VideoOverlay({ videoUrl, frames, onClose }: VideoOverlayProps) {
   const backdropRef = useRef<HTMLDivElement>(null);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -72,7 +73,21 @@ export default function VideoOverlay({ videoUrl, onClose }: VideoOverlayProps) {
           <span aria-hidden style={{ position: "absolute", top: 4, right: 4, width: 20, height: 20, borderTop: "2px solid rgba(0, 229, 255, 0.5)", borderRight: "2px solid rgba(0, 229, 255, 0.5)", zIndex: 2, pointerEvents: "none" }} />
           <span aria-hidden style={{ position: "absolute", bottom: 4, left: 4, width: 20, height: 20, borderBottom: "2px solid rgba(0, 229, 255, 0.5)", borderLeft: "2px solid rgba(0, 229, 255, 0.5)", zIndex: 2, pointerEvents: "none" }} />
           <span aria-hidden style={{ position: "absolute", bottom: 4, right: 4, width: 20, height: 20, borderBottom: "2px solid rgba(0, 229, 255, 0.5)", borderRight: "2px solid rgba(0, 229, 255, 0.5)", zIndex: 2, pointerEvents: "none" }} />
-          <video src={videoUrl} autoPlay controls style={{ display: "block", maxWidth: "85vw", maxHeight: "75vh", objectFit: "contain" }} />
+
+          {frames && frames.length > 0 ? (
+            <div style={{ display: "flex", gap: "10px", padding: "20px", overflowX: "auto", maxWidth: "85vw" }}>
+              {frames.map((frame, idx) => (
+                <div key={idx} style={{ flexShrink: 0, border: "2px solid #000", background: "#fff", padding: "4px" }}>
+                  <img src={frame} alt={`Frame ${idx + 1}`} style={{ display: "block", height: "400px", objectFit: "cover" }} />
+                  <div style={{ fontFamily: "var(--font-mono)", fontSize: 10, textAlign: "center", marginTop: 4, color: "#000" }}>T + {idx}s</div>
+                </div>
+              ))}
+            </div>
+          ) : videoUrl ? (
+            <video src={videoUrl} autoPlay controls style={{ display: "block", maxWidth: "85vw", maxHeight: "75vh", objectFit: "contain" }} />
+          ) : (
+            <div style={{ padding: 40, fontFamily: "var(--font-mono)", color: "var(--color-accent-cyan)" }}>NO DATA AVAILABLE</div>
+          )}
         </motion.div>
 
         <div style={{ position: "absolute", bottom: 20, fontFamily: "var(--font-mono)", fontSize: 9, letterSpacing: "0.25em", color: "var(--color-text-dim)", opacity: 0.6 }}>

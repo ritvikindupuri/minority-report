@@ -33,6 +33,7 @@ export interface Simulation {
   status: "pending" | "generating" | "complete" | "failed";
   prompt: string;
   video_url: string | null;
+  frames?: string[]; // Optional for comic book frame by frame
   error?: string;
 }
 
@@ -98,6 +99,7 @@ export interface GetSimulationResponse {
   status: "pending" | "generating" | "complete" | "failed";
   prompt: string;
   video_url: string | null;
+  frames?: string[]; // Optional for comic book frame by frame
   error?: string;
 }
 

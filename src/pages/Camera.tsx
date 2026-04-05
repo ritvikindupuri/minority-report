@@ -17,6 +17,7 @@ export default function CameraPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
+  const [frames, setFrames] = useState<string[]>([]);
 
   useEffect(() => {
     const sessionId = getSessionId();
@@ -41,12 +42,14 @@ export default function CameraPage() {
     if (!sessionId || !cameraId) return;
     setIsSimulating(true);
     setVideoUrl(null);
+    setFrames([]);
     try {
       await startSimulation(sessionId, cameraId, prompt);
       const stopPolling = pollSimulation(sessionId, cameraId, (result) => {
-        if (result.status === "complete" && result.video_url) {
+        if (result.status === "complete" && (result.video_url || (result.frames && result.frames.length > 0))) {
           setIsSimulating(false);
           setVideoUrl(result.video_url);
+          setFrames(result.frames || []);
           stopPolling();
         } else if (result.status === "failed") {
           setIsSimulating(false);
@@ -64,7 +67,10 @@ export default function CameraPage() {
     if (newCameraId !== cameraId) navigate(`/camera/${newCameraId}`, { replace: false });
   }, [cameraId, navigate]);
 
-  const handleCloseVideo = useCallback(() => setVideoUrl(null), []);
+  const handleCloseVideo = useCallback(() => {
+    setVideoUrl(null);
+    setFrames([]);
+  }, []);
 
   if (loading) {
     return (
@@ -130,7 +136,7 @@ export default function CameraPage() {
         isSimulating={isSimulating}
       />
 
-      {videoUrl && <VideoOverlay videoUrl={videoUrl} onClose={handleCloseVideo} />}
+      {(videoUrl || frames.length > 0) && <VideoOverlay videoUrl={videoUrl} frames={frames} onClose={handleCloseVideo} />}
     </motion.main>
   );
 }
